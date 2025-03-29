@@ -71,3 +71,15 @@ MIT
 
 ## error cuando se intenta guardar un nuevo cliente con datos repetidos en la base de datos, se debe verificar que no exista un cliente con los mismos datos. y mostrar un mensaje de error al usuario. similar a como funciona ajax.
 
+### Funcionalidades Futuras
+
+- Integración con la SAT (Superintendencia de Administración Tributaria) para validación automática de facturas electrónicas
+- Módulo de reportes fiscales específicos para Guatemala (IVA, ISR)
+- Sistema de cotizaciones que se puedan convertir fácilmente en facturas
+- Gestión de inventario con alertas de stock mínimo
+- Módulo de gastos para seguimiento de compras y pagos a proveedores
+- Integración con pasarelas de pago locales guatemaltecas
+- Exportación de reportes en formatos requeridos por la SAT
+- Sistema de recordatorios para pagos pendientes de clientes
+- Módulo de firma electrónica para cumplir con requisitos legales guatemaltecos
+- Panel de KPIs financieros con métricas específicas para negocios guatemaltecos
