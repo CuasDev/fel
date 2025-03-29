@@ -1,4 +1,5 @@
 import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
 import { body } from 'express-validator';
 import {
   registerUser,
@@ -165,7 +166,7 @@ router.post('/login', loginUser);
  *       500:
  *         description: Error del servidor
  */
-router.get('/profile', getUserProfile);
+router.get('/profile', protect, getUserProfile);
 
 /**
  * @swagger
@@ -212,6 +213,7 @@ router.get('/profile', getUserProfile);
  */
 router.put(
   '/profile',
+  protect,
   [
     body('name').optional(),
     body('email').optional().isEmail().withMessage('Debe proporcionar un correo electrónico válido'),

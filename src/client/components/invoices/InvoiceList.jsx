@@ -20,6 +20,8 @@ import {
   Delete as DeleteIcon,
   Print as PrintIcon,
 } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const InvoiceList = ({
   invoices,
@@ -61,39 +63,48 @@ const InvoiceList = ({
     );
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-      <TableContainer sx={{ maxHeight: 440 }}>
-        {loading && invoices.length === 0 ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Número</TableCell>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Cliente</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Estado</TableCell>
-                <TableCell align="right">Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {invoices.length > 0 ? (
-                invoices.map((invoice) => (
-                  <TableRow hover key={invoice._id}>
-                    <TableCell>{invoice.invoiceNumber}</TableCell>
-                    <TableCell>{formatDate(invoice.issueDate)}</TableCell>
-                    <TableCell>{invoice.customer.name}</TableCell>
-                    <TableCell>{formatCurrency(invoice.total)}</TableCell>
-                    <TableCell>{getStatusChip(invoice.status)}</TableCell>
-                    <TableCell align="right">
+    <Paper sx={{ width: '100%', overflow: 'auto' }}>
+      <TableContainer sx={{ maxHeight: 440, maxWidth: isMobile ? '100vw' : 'auto' }}>
+        <Table stickyHeader aria-label="sticky table" sx={{ minWidth: isMobile ? 800 : 'auto' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>Número</TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>Fecha</TableCell>
+              {!isMobile && (
+                <>
+                  <TableCell>Cliente</TableCell>
+                  <TableCell>Total</TableCell>
+                </>
+              )}
+              <TableCell>Estado</TableCell>
+              <TableCell align="right">Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {invoices && invoices.length > 0 ? (
+              invoices.map((invoice) => (
+                <TableRow hover key={invoice._id}>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{invoice.invoiceNumber}</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(invoice.issueDate)}</TableCell>
+                  {!isMobile && (
+                    <>
+                      <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {invoice.customer.name}
+                      </TableCell>
+                      <TableCell>{formatCurrency(invoice.total)}</TableCell>
+                    </>
+                  )}
+                  <TableCell>{getStatusChip(invoice.status)}</TableCell>
+                  <TableCell align="right" sx={{ pr: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                       <Tooltip title="Imprimir">
                         <IconButton
                           color="primary"
-                          onClick={() => window.open(`/api/v1/invoices/${invoice._id}/pdf`, '_blank')}
+                          onClick={() => window.open(`/invoices/${invoice._id}/pdf`, '_blank')}
                         >
                           <PrintIcon />
                         </IconButton>
@@ -114,19 +125,19 @@ const InvoiceList = ({
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No se encontraron facturas
+                    </Box>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={isMobile ? 4 : 6} align="center">
+                  No se encontraron facturas
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </TableContainer>
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}

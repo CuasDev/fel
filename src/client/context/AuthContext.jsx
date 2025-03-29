@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Obtener el perfil del usuario
-      const res = await axios.get('/api/v1/users/profile');
+      const res = await axios.get('/users/profile');
       
       if (res.data.success) {
         setUser(res.data.data);
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const res = await axios.post('/api/v1/users/login', { email, password });
+      const res = await axios.post('/users/login', { email, password });
       
       if (res.data.success) {
         const { token } = res.data.data;
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const res = await axios.post('/api/v1/users/register', userData);
+      const res = await axios.post('/users/register', userData);
       
       if (res.data.success) {
         const { token } = res.data.data;
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const res = await axios.put('/api/v1/users/profile', userData);
+      const res = await axios.put('/users/profile', userData);
       
       if (res.data.success) {
         setUser(res.data.data);

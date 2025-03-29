@@ -96,11 +96,11 @@ const InvoiceForm = ({
             <Grid item xs={12}>
               <Autocomplete
                 id="customer"
-                options={customers}
-                getOptionLabel={(option) => option.name || ''}
+                options={customers || []}
+                getOptionLabel={(option) => option?.name || ''}
                 value={selectedCustomer}
                 onChange={handleCustomerChange}
-                isOptionEqualToValue={(option, value) => option._id === value._id}
+                isOptionEqualToValue={(option, value) => option?._id === value?._id}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -121,16 +121,17 @@ const InvoiceForm = ({
               </Typography>
             </Grid>
             
-            {formData.items.map((item, index) => (
+            {formData.items && formData.items.length > 0 ? (
+              formData.items.map((item, index) => (
               <Grid item xs={12} key={index}>
                 <Paper sx={{ p: 2, mb: 2 }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <Autocomplete
-                        options={products}
-                        getOptionLabel={(option) => `${option.code} - ${option.name}` || ''}
+                        options={products || []}
+                        getOptionLabel={(option) => option ? `${option.code || ''} - ${option.name || ''}` : ''}
                         onChange={(event, newValue) => handleProductChange(index, event, newValue)}
-                        isOptionEqualToValue={(option, value) => option._id === value._id}
+                        isOptionEqualToValue={(option, value) => option?._id === value?._id}
                         renderInput={(params) => (
                           <TextField
                             {...params}
@@ -247,7 +248,14 @@ const InvoiceForm = ({
                   </Grid>
                 </Paper>
               </Grid>
-            ))}
+            ))
+            ) : (
+              <Grid item xs={12}>
+                <Typography variant="body1" color="textSecondary">
+                  No hay productos agregados.
+                </Typography>
+              </Grid>
+            )}
             
             <Grid item xs={12}>
               <Button

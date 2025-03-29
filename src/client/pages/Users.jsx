@@ -86,7 +86,7 @@ const Users = () => {
       if (roleFilter) params.role = roleFilter;
       if (activeFilter !== '') params.active = activeFilter === 'true';
       
-      const res = await axios.get('/api/v1/users', { params });
+      const res = await axios.get('/users', { params });
       
       if (res.data.success) {
         setUsers(res.data.data.users);
@@ -196,6 +196,12 @@ const Users = () => {
     
     if (!validateForm()) return;
     
+    // Verificar si el usuario tiene permisos de administrador
+    if (user.role !== 'admin') {
+      setError('No tienes permisos para crear o editar usuarios. Solo los administradores pueden realizar esta acción.');
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -206,18 +212,20 @@ const Users = () => {
       
       let res;
       if (isEditing) {
-        res = await axios.put(`/api/v1/users/${selectedUserId}`, userData);
+        res = await axios.put(`/users/${selectedUserId}`, userData);
       } else {
-        res = await axios.post('/api/v1/users/register', userData);
+        res = await axios.post('/users/register', userData);
       }
       
-      if (res.data.success) {
-        handleCloseForm();
-        fetchUsers();
-      }
+      handleCloseForm();
+      fetchUsers();
     } catch (error) {
       console.error('Error al guardar usuario:', error);
-      setError('Error al guardar los datos del usuario. Inténtelo de nuevo.');
+      setFormErrors({
+        ...formErrors,
+        general: error.response?.data?.errors?.[0]?.msg || 'Error al guardar los datos del usuario'
+      });
+      setError(error.response?.data?.errors?.[0]?.msg || 'Error al guardar los datos del usuario. Inténtelo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -235,15 +243,20 @@ const Users = () => {
   };
   
   const handleDeleteUser = async () => {
+    // Verificar si el usuario tiene permisos de administrador
+    if (user.role !== 'admin') {
+      setError('No tienes permisos para eliminar usuarios. Solo los administradores pueden realizar esta acción.');
+      handleCloseDeleteDialog();
+      return;
+    }
+    
     try {
       setLoading(true);
       
-      const res = await axios.delete(`/api/v1/users/${userToDelete._id}`);
+      const res = await axios.delete(`/users/${userToDelete._id}`);
       
-      if (res.data.success) {
-        handleCloseDeleteDialog();
-        fetchUsers();
-      }
+      handleCloseDeleteDialog();
+      fetchUsers();
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
       setError('Error al eliminar el usuario. Inténtelo de nuevo.');
@@ -347,13 +360,15 @@ const Users = () => {
             </IconButton>
           </Tooltip>
           
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenForm()}
-          >
-            Nuevo Usuario
-          </Button>
+          {user && user.role === 'admin' && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenForm()}
+            >
+              Nuevo Usuario
+            </Button>
+          )}
         </Box>
       </Paper>
       
@@ -384,22 +399,26 @@ const Users = () => {
                       <TableCell>{getRoleChip(user.role)}</TableCell>
                       <TableCell>{getStatusChip(user.active)}</TableCell>
                       <TableCell align="right">
-                        <Tooltip title="Editar">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenForm(user)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                          <IconButton
-                            color="error"
-                            onClick={() => handleOpenDeleteDialog(user)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
+                        {user && user.role === 'admin' && (
+                          <>
+                            <Tooltip title="Editar">
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleOpenForm(user)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Eliminar">
+                              <IconButton
+                                color="error"
+                                onClick={() => handleOpenDeleteDialog(user)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

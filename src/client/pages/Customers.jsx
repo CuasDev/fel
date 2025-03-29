@@ -38,9 +38,13 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 const Customers = () => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -92,15 +96,13 @@ const Customers = () => {
       if (searchTerm) params.search = searchTerm;
       if (activeFilter !== '') params.active = activeFilter === 'true';
       
-      const res = await axios.get('/api/v1/customers', { params });
+      const res = await axios.get('/customers', { params });
       
-      if (res.data.success) {
-        setCustomers(res.data.data.customers);
+        setCustomers(res.data.customers);
         setPagination({
           ...pagination,
-          total: res.data.data.pagination.total,
+          total: res.data.pagination.total,
         });
-      }
     } catch (error) {
       console.error('Error al cargar clientes:', error);
       setError('Error al cargar la lista de clientes. Inténtelo de nuevo.');
@@ -194,10 +196,11 @@ const Customers = () => {
     
     // Limpiar errores al editar
     if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
+      setFormErrors(prev => ({
+        ...prev,
         [name]: '',
-      });
+        general: ''
+      }));
     }
   };
   
@@ -232,18 +235,20 @@ const Customers = () => {
       
       let res;
       if (isEditing) {
-        res = await axios.put(`/api/v1/customers/${selectedCustomerId}`, formData);
+        res = await axios.put(`/customers/${selectedCustomerId}`, formData);
       } else {
-        res = await axios.post('/api/v1/customers', formData);
+        res = await axios.post('/customers', formData);
       }
       
-      if (res.data.success) {
         handleCloseForm();
         fetchCustomers();
-      }
     } catch (error) {
       console.error('Error al guardar cliente:', error);
-      setError('Error al guardar los datos del cliente. Inténtelo de nuevo.');
+      setFormErrors({
+        ...formErrors,
+        general: error.response?.data?.errors?.[0]?.msg || 'Error al guardar el cliente',
+      });
+      setError(error.response?.data?.errors?.[0]?.msg || 'Error al guardar el cliente');
     } finally {
       setLoading(false);
     }
@@ -264,12 +269,10 @@ const Customers = () => {
     try {
       setLoading(true);
       
-      const res = await axios.delete(`/api/v1/customers/${customerToDelete._id}`);
+      const res = await axios.delete(`/customers/${customerToDelete._id}`);
       
-      if (res.data.success) {
         handleCloseDeleteDialog();
         fetchCustomers();
-      }
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
       setError('Error al eliminar el cliente. Inténtelo de nuevo.');
@@ -339,69 +342,67 @@ const Customers = () => {
       </Paper>
       
       {/* Tabla de clientes */}
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          {loading && customers.length === 0 ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Table stickyHeader aria-label="sticky table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID Fiscal</TableCell>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Correo Electrónico</TableCell>
-                  <TableCell>Teléfono</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell align="right">Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {customers.length > 0 ? (
-                  customers.map((customer) => (
-                    <TableRow hover key={customer._id}>
-                      <TableCell>{customer.taxId}</TableCell>
-                      <TableCell>{customer.name}</TableCell>
-                      <TableCell>{customer.email}</TableCell>
-                      <TableCell>{customer.phone || '-'}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={customer.active ? 'ACTIVO' : 'INACTIVO'}
-                          color={customer.active ? 'success' : 'default'}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Tooltip title="Editar">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenForm(customer)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                          <IconButton
-                            color="error"
-                            onClick={() => handleOpenDeleteDialog(customer)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      No se encontraron clientes
-                    </TableCell>
-                  </TableRow>
+      <Paper sx={{ width: '100%', overflow: 'auto' }}>
+        <TableContainer sx={{ maxHeight: 440, maxWidth: isMobile ? '100vw' : 'auto' }}>
+          <Table stickyHeader aria-label="sticky table" sx={{ minWidth: isMobile ? 800 : 'auto' }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>Nombre</TableCell>
+                {!isMobile && (
+                  <>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>Tax ID</TableCell>
+                    <TableCell>Email</TableCell>
+                  </>
                 )}
-              </TableBody>
-            </Table>
-          )}
+                <TableCell>Teléfono</TableCell>
+                <TableCell>Estado</TableCell>
+                <TableCell align="right">Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {customers.map((customer) => (
+                <TableRow hover key={customer._id}>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{customer.name}</TableCell>
+                  {!isMobile && (
+                    <>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{customer.taxId}</TableCell>
+                      <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {customer.email}
+                      </TableCell>
+                    </>
+                  )}
+                  <TableCell>{customer.phone}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={customer.active ? 'Activo' : 'Inactivo'}
+                      color={customer.active ? 'success' : 'error'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="right" sx={{ pr: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <Tooltip title="Editar">
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleOpenForm(customer)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton
+                          color="error"
+                          onClick={() => handleOpenDeleteDialog(customer)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
@@ -422,134 +423,50 @@ const Customers = () => {
       <Dialog open={openForm} onClose={handleCloseForm} maxWidth="md" fullWidth>
         <DialogTitle>{isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
         <DialogContent>
-          <Box component="form" noValidate sx={{ mt: 1 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="taxId"
-                  label="Identificación Fiscal (RFC, NIT, etc.)"
-                  name="taxId"
-                  value={formData.taxId}
-                  onChange={handleFormChange}
-                  error={!!formErrors.taxId}
-                  helperText={formErrors.taxId}
-                  disabled={loading}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="name"
-                  label="Nombre o Razón Social"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                  error={!!formErrors.name}
-                  helperText={formErrors.name}
-                  disabled={loading}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Correo Electrónico"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleFormChange}
-                  error={!!formErrors.email}
-                  helperText={formErrors.email}
-                  disabled={loading}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="phone"
-                  label="Teléfono"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
-                  Dirección
-                </Typography>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  id="street"
-                  label="Calle y Número"
-                  name="address.street"
-                  value={formData.address.street}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  fullWidth
-                  id="city"
-                  label="Ciudad"
-                  name="address.city"
-                  value={formData.address.city}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  fullWidth
-                  id="state"
-                  label="Estado/Provincia"
-                  name="address.state"
-                  value={formData.address.state}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  fullWidth
-                  id="postalCode"
-                  label="Código Postal"
-                  name="address.postalCode"
-                  value={formData.address.postalCode}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  id="country"
-                  label="País"
-                  name="address.country"
-                  value={formData.address.country}
-                  onChange={handleFormChange}
-                  disabled={loading}
-                />
-              </Grid>
+          <Grid container spacing={2} direction={isMobile ? 'column' : 'row'}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Nombre"
+                name="name"
+                value={formData.name}
+                onChange={handleFormChange}
+                error={!!formErrors.name}
+                helperText={formErrors.name}
+              />
             </Grid>
-          </Box>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Tax ID"
+                name="taxId"
+                value={formData.taxId}
+                onChange={handleFormChange}
+                error={!!formErrors.taxId}
+                helperText={formErrors.taxId}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleFormChange}
+                error={!!formErrors.email}
+                helperText={formErrors.email}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Teléfono"
+                name="phone"
+                value={formData.phone}
+                onChange={handleFormChange}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseForm} disabled={loading}>

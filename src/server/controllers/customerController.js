@@ -23,9 +23,11 @@ export const createCustomer = async (req, res) => {
 
     if (customerExists) {
       return res.status(400).json({
-        message: customerExists.taxId === taxId
-          ? 'La identificación fiscal ya está registrada'
-          : 'El correo electrónico ya está registrado',
+        errors: [{
+          msg: customerExists.taxId === taxId
+            ? 'La identificación fiscal ya está registrada'
+            : 'El correo electrónico ya está registrado'
+        }]
       });
     }
 
@@ -142,7 +144,7 @@ export const updateCustomer = async (req, res) => {
     if (email && email !== customer.email) {
       const emailExists = await Customer.findOne({ email });
       if (emailExists) {
-        return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
+        return res.status(400).json({ errors: [{ msg: 'El correo electrónico ya está registrado' }] });
       }
     }
 

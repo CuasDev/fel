@@ -90,7 +90,8 @@ const Layout = ({ children }) => {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
+        {menuItems && menuItems.length > 0 ? (
+          menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
               selected={location.pathname === item.path}
@@ -100,7 +101,11 @@ const Layout = ({ children }) => {
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
-        ))}
+        ))) : (
+          <ListItem disablePadding>
+            <ListItemText primary="No hay elementos en el menú" />
+          </ListItem>
+        )}
       </List>
     </div>
   );

@@ -41,7 +41,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Products = () => {
   const { user } = useAuth();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); // Inicializar como array vacío
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -91,13 +91,13 @@ const Products = () => {
       if (categoryFilter) params.category = categoryFilter;
       if (activeFilter !== '') params.active = activeFilter === 'true';
       
-      const res = await axios.get('/api/v1/products', { params });
+      const res = await axios.get('/products', { params });
       
       if (res.data.success) {
-        setProducts(res.data.data.products);
+        setProducts(res.data.data || []); // Usar data directamente en lugar de data.products
         setPagination({
           ...pagination,
-          total: res.data.data.pagination.total,
+          total: res.data.pagination?.total || 0,
         });
       }
     } catch (error) {
@@ -234,9 +234,9 @@ const Products = () => {
       
       let res;
       if (isEditing) {
-        res = await axios.put(`/api/v1/products/${selectedProductId}`, productData);
+        res = await axios.put(`/products/${selectedProductId}`, productData);
       } else {
-        res = await axios.post('/api/v1/products', productData);
+        res = await axios.post('/products', productData);
       }
       
       if (res.data.success) {
@@ -266,7 +266,7 @@ const Products = () => {
     try {
       setLoading(true);
       
-      const res = await axios.delete(`/api/v1/products/${productToDelete._id}`);
+      const res = await axios.delete(`/products/${productToDelete._id}`);
       
       if (res.data.success) {
         handleCloseDeleteDialog();
@@ -367,7 +367,7 @@ const Products = () => {
       {/* Tabla de productos */}
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
         <TableContainer sx={{ maxHeight: 440 }}>
-          {loading && products.length === 0 ? (
+          {loading && (products?.length === 0) ? ( // Verificación reforzada
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
@@ -386,9 +386,9 @@ const Products = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {products.length > 0 ? (
+                {products && products.length > 0 ? (
                   products.map((product) => (
-                    <TableRow hover key={product._id}>
+                    <TableRow key={product._id}>
                       <TableCell>{product.code}</TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
