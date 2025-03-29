@@ -67,3 +67,7 @@ La documentación de la API está disponible en `/api-docs` cuando el servidor e
 ## Licencia
 
 MIT
+
+
+## error cuando se intenta guardar un nuevo cliente con datos repetidos en la base de datos, se debe verificar que no exista un cliente con los mismos datos. y mostrar un mensaje de error al usuario. similar a como funciona ajax.
+

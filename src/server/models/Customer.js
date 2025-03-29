@@ -21,9 +21,17 @@ const customerSchema = new mongoose.Schema(
   {
     taxId: {
       type: String,
-      required: [true, 'La identificación fiscal es obligatoria'],
+      required: [true, 'El NIT es obligatorio'],
       unique: true,
       trim: true,
+      validate: {
+        validator: function(v) {
+          // Validación para NIT guatemalteco: puede tener guiones o no
+          // Formato típico: números o números-dígito verificador (ej: 12345678, 1234567-8, 12345678-9)
+          return /^\d{1,9}(-\d{1})?$/.test(v);
+        },
+        message: props => `${props.value} no es un NIT guatemalteco válido`
+      }
     },
     name: {
       type: String,
@@ -62,7 +70,7 @@ const customerSchema = new mongoose.Schema(
       country: {
         type: String,
         trim: true,
-        default: 'México',
+        default: 'Guatemala',
       },
     },
     active: {
@@ -91,7 +99,7 @@ const customerSchema = new mongoose.Schema(
  *           description: ID autogenerado del cliente
  *         taxId:
  *           type: string
- *           description: Identificación fiscal (RFC, NIT, etc.)
+ *           description: NIT (Número de Identificación Tributaria) guatemalteco
  *         name:
  *           type: string
  *           description: Nombre o razón social

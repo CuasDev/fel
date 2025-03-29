@@ -39,7 +39,7 @@ const Invoices = () => {
         description: '',
         quantity: 1,
         unitPrice: 0,
-        taxRate: 16,
+        taxRate: 12,
         subtotal: 0,
         taxAmount: 0,
         total: 0,
@@ -177,11 +177,11 @@ const Invoices = () => {
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        taxRate: 16, // Valor por defecto si no existe
+        taxRate: 12, // Valor por defecto si no existe
         subtotal: item.subtotal || (item.quantity * item.unitPrice),
-        taxAmount: item.taxAmount || ((item.quantity * item.unitPrice) * 0.16),
+        taxAmount: item.taxAmount || ((item.quantity * item.unitPrice) * 0.12),
         total: (item.subtotal || (item.quantity * item.unitPrice)) + 
-               (item.taxAmount || ((item.quantity * item.unitPrice) * 0.16)),
+               (item.taxAmount || ((item.quantity * item.unitPrice) * 0.12)),
       })) : [];
       
       
@@ -213,7 +213,7 @@ const Invoices = () => {
             description: '',
             quantity: 1,
             unitPrice: 0,
-            taxRate: 16,
+            taxRate: 12,
             subtotal: 0,
             taxAmount: 0,
             total: 0,
@@ -244,7 +244,7 @@ const Invoices = () => {
           description: '',
           quantity: 1,
           unitPrice: 0,
-          taxRate: 16,
+          taxRate: 12,
           subtotal: 0,
           taxAmount: 0,
           total: 0,

@@ -208,7 +208,9 @@ const Customers = () => {
     const errors = {};
     
     if (!formData.taxId) {
-      errors.taxId = 'La identificación fiscal es obligatoria';
+      errors.taxId = 'El NIT es obligatorio';
+    } else if (!/^\d{1,9}(-\d{1})?$/.test(formData.taxId)) {
+      errors.taxId = 'El formato del NIT no es válido (debe ser: números o números-dígito verificador)';
     }
     
     if (!formData.name) {
@@ -350,7 +352,7 @@ const Customers = () => {
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>Nombre</TableCell>
                 {!isMobile && (
                   <>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>Tax ID</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>NIT</TableCell>
                     <TableCell>Email</TableCell>
                   </>
                 )}
@@ -438,7 +440,7 @@ const Customers = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Tax ID"
+                label="NIT"
                 name="taxId"
                 value={formData.taxId}
                 onChange={handleFormChange}

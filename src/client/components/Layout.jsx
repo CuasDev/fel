@@ -30,6 +30,7 @@ import {
   AccountCircle as AccountIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import ThemeSelector from './ThemeSelector';
 
 const drawerWidth = 240;
 
@@ -69,8 +70,8 @@ const Layout = ({ children }) => {
 
   const handleProfileClick = () => {
     handleMenuClose();
-    // Navegar a la página de perfil (si existe)
-    // navigate('/profile');
+    // Navegar a la página de perfil
+    navigate('/profile');
   };
 
   const handleMenuItemClick = (path) => {
@@ -138,6 +139,7 @@ const Layout = ({ children }) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Sistema de Facturación Electrónica
           </Typography>
+          <ThemeSelector />
           {isAuthenticated && (
             <div>
               <IconButton

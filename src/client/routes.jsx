@@ -7,6 +7,7 @@ import Users from './pages/Users';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Invoices from './pages/Invoices';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -61,6 +62,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Invoices />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         ),
       },
